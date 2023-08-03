@@ -1,0 +1,166 @@
+{
+  "name": "datadog_agent_not_running_in_kubernetes_cluster",
+  "description": "This incident type involves an alert triggered by the Datadog monitoring agent indicating that it has stopped running in a particular Kubernetes cluster. This can lead to a variety of issues such as loss of visibility into cluster performance, potential security risks, and other problems that can impact operations. The incident requires immediate attention and resolution to ensure the Datadog agent is running properly and that the cluster is operating as expected.",
+  "params": [
+    {
+      "name": "DATADOG_AGENT_POD_NAME",
+      "value": ""
+    },
+    {
+      "name": "DATADOG_AGENT_NAMESPACE",
+      "value": ""
+    },
+    {
+      "name": "DATADOG_AGENT_CONTAINER",
+      "value": ""
+    },
+    {
+      "name": "SELECTOR_TO_IDENTIFY_AGENT_POD",
+      "value": ""
+    },
+    {
+      "name": "DATADOG_AGENT_PORT",
+      "value": ""
+    },
+    {
+      "name": "DATADOG_AGENT_HOST",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Datadog Agent Not Running in Kubernetes Cluster.\nThis incident type involves an alert triggered by the Datadog monitoring agent indicating that it has stopped running in a particular Kubernetes cluster. This can lead to a variety of issues such as loss of visibility into cluster performance, potential security risks, and other problems that can impact operations. The incident requires immediate attention and resolution to ensure the Datadog agent is running properly and that the cluster is operating as expected."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the Datadog agent is deployed in the Kubernetes cluster"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl get daemonset datadog-agent`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the logs of the Datadog agent pod"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl logs ${DATADOG_AGENT_POD_NAME}`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the Datadog agent is running on all nodes in the Kubernetes cluster"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE | `agent status`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the Datadog agent is able to connect to the Datadog backend"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE | `agent configcheck`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the status of the Kubernetes nodes in the cluster"
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl get nodes`"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the status of the Kubernetes pods in the cluster"
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl get pods --all-namespaces`"
+    },
+    {
+      "name": "cell_14",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the status of the Kubernetes services in the cluster"
+    },
+    {
+      "name": "cell_15",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl get services --all-namespaces`"
+    },
+    {
+      "name": "cell_16",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## There may have been an issue with the network or communication between the Datadog agent and the Kubernetes cluster."
+    },
+    {
+      "name": "cell_17",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | random=1 | limit=1 | invoke_check_datadog_agent($DATADOG_AGENT_POD_NAME, $DATADOG_AGENT_NAMESPACE)"
+    },
+    {
+      "name": "cell_18",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Verify the connection between the Kubernetes cluster and the Datadog agent."
+    },
+    {
+      "name": "cell_19",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | random=1 | limit=1 | invoke_datadog_agent_check($DATADOG_AGENT_POD_NAME, $DATADOG_AGENT_NAMESPACE, $DATADOG_AGENT_PORT, $DATADOG_AGENT_HOST)"
+    },
+    {
+      "name": "cell_20",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Perform a rolling restart of the Datadog agent DaemonSet."
+    },
+    {
+      "name": "cell_21",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | random=1 | limit=1 | invoke_restart_datadog_agent()"
+    }
+  ]
+}
